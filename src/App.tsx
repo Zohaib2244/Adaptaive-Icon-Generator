@@ -167,7 +167,7 @@ function AssetUploader({
 function StatusAnnotation({ status, hasForeground }: { status: SafeStatus; hasForeground: boolean }) {
   if (!hasForeground) {
     return (
-      <div className="annotation neutral" role="status">
+      <div className="annotation neutral" role="status" key="neutral">
         <CircleHelp aria-hidden="true" />
         <div>
           <strong>Waiting for artwork</strong>
@@ -178,7 +178,7 @@ function StatusAnnotation({ status, hasForeground }: { status: SafeStatus; hasFo
   }
   if (status === 'safe') {
     return (
-      <div className="annotation safe" role="status">
+      <div className="annotation safe" role="status" key="safe">
         <ShieldCheck aria-hidden="true" />
         <div>
           <strong>Safe to export</strong>
@@ -189,7 +189,7 @@ function StatusAnnotation({ status, hasForeground }: { status: SafeStatus; hasFo
   }
   if (status === 'near') {
     return (
-      <div className="annotation warning" role="status">
+      <div className="annotation warning" role="status" key="near">
         <ShieldAlert aria-hidden="true" />
         <div>
           <strong>Near the limit</strong>
@@ -199,7 +199,7 @@ function StatusAnnotation({ status, hasForeground }: { status: SafeStatus; hasFo
     )
   }
   return (
-    <div className="annotation error" role="alert">
+    <div className="annotation error" role="alert" key="outside">
       <AlertTriangle aria-hidden="true" />
       <div>
         <strong>Outside safe zone</strong>
@@ -226,6 +226,8 @@ function App() {
   const [exportPhase, setExportPhase] = useState('Ready')
   const [exportError, setExportError] = useState<string | null>(null)
   const [exportResult, setExportResult] = useState<ExportResult | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [activeStep, setActiveStep] = useState('assets')
   const dragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null)
   const resourcesRef = useRef<{
     background: LoadedAsset | null
@@ -249,6 +251,44 @@ function App() {
   useEffect(() => {
     resourcesRef.current = { background, foreground, exportResult }
   }, [background, foreground, exportResult])
+
+  useEffect(() => {
+    const headings = ['assets', 'fit', 'preview', 'export']
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => element !== null)
+    if (!headings.length) return
+
+    const markerOffset = 150
+    let frame = 0
+
+    const update = () => {
+      frame = 0
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
+      if (atBottom) {
+        setActiveStep(headings[headings.length - 1].id)
+        return
+      }
+      let current = headings[0].id
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top - markerOffset <= 0) current = heading.id
+      }
+      setActiveStep(current)
+    }
+
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(update)
+    }
+
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [])
 
   useEffect(() => () => {
     releaseAsset(resourcesRef.current.background)
@@ -394,7 +434,11 @@ function App() {
           ['03', 'Preview', '#preview', Boolean(foreground)],
           ['04', 'Export', '#export', Boolean(exportResult)],
         ].map(([step, label, href, complete]) => (
-          <a key={step as string} href={href as string} className={complete ? 'complete' : ''}>
+          <a
+            key={step as string}
+            href={href as string}
+            className={[complete ? 'complete' : '', href === `#${activeStep}` ? 'current' : ''].filter(Boolean).join(' ')}
+          >
             <span>{complete ? <Check aria-hidden="true" /> : step}</span>
             {label as string}
           </a>
@@ -505,13 +549,14 @@ function App() {
                 </label>
               </div>
               <div
-                className={`canvas-stage ${foreground ? 'is-draggable' : ''}`}
+                className={`canvas-stage ${foreground ? 'is-draggable' : ''} ${isDragging ? 'is-active-drag' : ''}`}
                 tabIndex={foreground ? 0 : -1}
                 aria-label="Icon editor. Drag the artwork or use arrow keys to change its position."
                 onPointerDown={(event) => {
                   if (!foreground) return
                   event.currentTarget.setPointerCapture(event.pointerId)
                   dragRef.current = { x: event.clientX, y: event.clientY, offsetX: transform.offsetX, offsetY: transform.offsetY }
+                  setIsDragging(true)
                 }}
                 onPointerMove={(event) => {
                   if (!dragRef.current) return
@@ -519,8 +564,8 @@ function App() {
                   updateOffset('offsetX', dragRef.current.offsetX + (event.clientX - dragRef.current.x) * ratio)
                   updateOffset('offsetY', dragRef.current.offsetY + (event.clientY - dragRef.current.y) * ratio)
                 }}
-                onPointerUp={() => { dragRef.current = null }}
-                onPointerCancel={() => { dragRef.current = null }}
+                onPointerUp={() => { dragRef.current = null; setIsDragging(false) }}
+                onPointerCancel={() => { dragRef.current = null; setIsDragging(false) }}
                 onKeyDown={(event) => {
                   if (!foreground || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return
                   event.preventDefault()
@@ -560,7 +605,7 @@ function App() {
             <aside className="tool-card validation-card">
               <div className="card-label-row">
                 <span className="eyebrow"><ShieldCheck aria-hidden="true" /> Validation</span>
-                <span className={`status-pill ${foreground ? status : 'neutral'}`}>{foreground ? status : 'waiting'}</span>
+                <span key={foreground ? status : 'neutral'} className={`status-pill ${foreground ? status : 'neutral'}`}>{foreground ? status : 'waiting'}</span>
               </div>
               <StatusAnnotation status={status} hasForeground={Boolean(foreground)} />
               <ul className="check-list">
@@ -588,7 +633,7 @@ function App() {
             <article className="hero-preview-card">
               <div className="card-label-row">
                 <span className="eyebrow"><Eye aria-hidden="true" /> Selected mask</span>
-                <span className="mask-name">{MASKS.find((mask) => mask.id === activeMask)?.label}</span>
+                <span key={activeMask} className="mask-name">{MASKS.find((mask) => mask.id === activeMask)?.label}</span>
               </div>
               <div className="device-preview">
                 <IconCanvas background={background} foreground={foreground} backgroundColor={backgroundColor} transform={transform} mask={activeMask} size={320} label={`${activeMask} launcher preview`} />

@@ -1567,6 +1567,266 @@ footer svg {
   }
 }
 
+/* ============================================================
+   Motion & feedback
+   ============================================================ */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.7); }
+  70% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cardSelect {
+  0% { transform: scale(0.98); }
+  50% { transform: scale(1.012); }
+  100% { transform: scale(1); }
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.18) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -120% 0; }
+  100% { background-position: 220% 0; }
+}
+
+/* Theme crossfade for the main surfaces, so toggling light/dark/system
+   doesn't hard-cut every panel at once. */
+body,
+.topbar,
+.step-nav,
+.step-nav a,
+.step-nav a span,
+.upload-card,
+.color-card,
+.tool-card,
+.canvas-card,
+.hero-preview-card,
+.mask-card,
+.export-card,
+.asset-loaded,
+.asset-thumbnail,
+.canvas-stage,
+.device-preview,
+.annotation,
+.status-pill,
+.layer-badge,
+.preset-pill,
+.mini-button,
+.icon-button,
+.theme-control,
+.theme-control button,
+.text-action,
+.brand-mark,
+.button,
+.number-pair label > div,
+.project-name-field input,
+.color-input,
+.compact-warning,
+.overflow-option {
+  transition: background-color 240ms ease, border-color 240ms ease, color 220ms ease, box-shadow 200ms ease;
+}
+
+/* Press / lift micro-interactions layered on top of the transitions above. */
+.button,
+.icon-button,
+.mini-button,
+.mask-card,
+.step-nav a,
+.theme-control button,
+.brand-mark {
+  transition-property: background-color, border-color, color, box-shadow, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.button:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}
+
+.button.primary:active:not(:disabled) {
+  background: var(--orange);
+  box-shadow: 1px 1px 0 var(--shadow);
+  transform: translate(1px, 1px);
+}
+
+.icon-button:active,
+.mini-button:active,
+.theme-control button:active {
+  transform: scale(0.9);
+}
+
+.icon-button svg {
+  transition: transform 220ms ease;
+}
+
+.icon-button:hover svg {
+  transform: rotate(-24deg);
+}
+
+.brand:hover .brand-mark {
+  transform: translateY(-2px) rotate(-4deg);
+  box-shadow: 4px 5px 0 var(--shadow);
+}
+
+.brand:active .brand-mark {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}
+
+.mask-card:active {
+  transform: translate(1px, 1px);
+}
+
+.mask-card.active {
+  animation: cardSelect 200ms ease-out;
+}
+
+.mask-name {
+  display: inline-block;
+  animation: fadeSlideUp 220ms ease both;
+}
+
+/* Drag-lift feedback while repositioning artwork on the canvas. */
+.canvas-stage {
+  transition: background-color 240ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+.canvas-stage.is-active-drag {
+  border-color: var(--orange);
+  box-shadow: 0 14px 26px -10px rgba(0, 0, 0, 0.4);
+  transform: scale(1.012);
+}
+
+/* Entrance animations for content that mounts fresh (conditionally rendered). */
+.asset-loaded {
+  animation: fadeSlideUp 320ms ease both;
+}
+
+.asset-check {
+  animation: checkPop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both;
+}
+
+.field-error {
+  animation: fadeSlideUp 220ms ease both;
+}
+
+.annotation {
+  animation: fadeSlideUp 240ms ease both;
+}
+
+.status-pill {
+  animation: popIn 220ms ease both;
+}
+
+.export-progress,
+.export-success {
+  animation: fadeSlideUp 280ms ease both;
+}
+
+.export-success > svg {
+  animation: checkPop 450ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.export-button {
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 140ms ease;
+}
+
+.export-button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.export-button:not(:disabled):active {
+  transform: translate(1px, 1px);
+}
+
+/* Animated progress fill so export feels alive instead of a static bar. */
+.export-progress progress {
+  transition: opacity 200ms ease;
+}
+
+.export-progress progress::-webkit-progress-value {
+  transition: width 260ms ease;
+  background-image: linear-gradient(90deg, var(--orange) 0%, var(--orange-bright) 50%, var(--orange) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.export-progress progress::-moz-progress-bar {
+  background-image: linear-gradient(90deg, var(--orange) 0%, var(--orange-bright) 50%, var(--orange) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Range + number inputs feel more tactile while adjusting artwork fit. */
+.range-field input[type='range'] {
+  transition: filter 150ms ease;
+}
+
+.range-field input[type='range']:active {
+  filter: brightness(1.12);
+}
+
+.range-field input[type='range']::-webkit-slider-thumb {
+  transition: transform 150ms ease;
+}
+
+.range-field input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+}
+
+.range-field input[type='range']::-moz-range-thumb {
+  transition: transform 150ms ease;
+}
+
+.range-field input[type='range']:active::-moz-range-thumb {
+  transform: scale(1.3);
+}
+
+.range-field output {
+  display: inline-block;
+  transition: transform 180ms ease;
+}
+
+.number-pair label > div:focus-within {
+  border-color: var(--orange);
+}
+
+/* Scroll-spy highlight: which step is currently in view. */
+.step-nav a.current {
+  color: var(--text);
+  background: color-mix(in srgb, var(--orange) 14%, var(--panel));
+}
+
+.step-nav a.current span {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* One-time staggered entrance for the four workspace sections on load. */
+.workspace-section {
+  animation: fadeSlideUp 520ms ease both;
+}
+
+.workspace-section:nth-of-type(1) { animation-delay: 0ms; }
+.workspace-section:nth-of-type(2) { animation-delay: 70ms; }
+.workspace-section:nth-of-type(3) { animation-delay: 140ms; }
+.workspace-section:nth-of-type(4) { animation-delay: 210ms; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1575,5 +1835,10 @@ footer svg {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .export-progress progress::-webkit-progress-value,
+  .export-progress progress::-moz-progress-bar {
+    animation: none !important;
   }
 }
