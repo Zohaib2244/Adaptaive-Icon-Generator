@@ -394,11 +394,11 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a href="#main" className="brand" aria-label="Adaptive Icon Generator home">
+        <a href="#main" className="brand" aria-label="NuttyTools Adaptive Icon Generator home">
           <span className="brand-mark"><Crop aria-hidden="true" /></span>
           <span>
-            <strong>Adaptive Icon</strong>
-            <small>Generator</small>
+            <strong>NuttyTools</strong>
+            <small>Adaptive Icon Generator</small>
           </span>
         </a>
         <div className="topbar-actions">
@@ -709,7 +709,7 @@ function App() {
       </main>
 
       <footer>
-        <span>Adaptive Icon Generator · v0.1</span>
+        <span>NuttyTools · Adaptive Icon Generator · v0.1</span>
         <span><ShieldCheck aria-hidden="true" /> Your images stay in this browser</span>
       </footer>
     </div>

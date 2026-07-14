@@ -1,4 +1,4 @@
-# Adaptive Icon Generator
+# NuttyTools: Adaptive Icon Generator
 
 A local-first browser tool for fitting, validating, previewing, and exporting Android adaptive icons for Unity.
 
